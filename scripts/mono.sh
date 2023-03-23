@@ -1,0 +1,1 @@
+/root/ddr_orb2/Examples/Monocular/mono_kitti /root/ddr_orb2/Vocabulary/ORBvoc.txt /root/ddr_orb2/Examples/Monocular/KITTI00-02.yaml /home/Dataset/02 seg
