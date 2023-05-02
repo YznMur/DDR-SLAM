@@ -82,9 +82,9 @@ int main(int argc, char **argv)
     cv::Mat imLeft, imRight;
 
     // Dilation settings
-    int dilation_size = 5;
+    int dilation_size = 10;
     cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
-                                        cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                        cv::Size( 1*dilation_size+1, dilation_size+1),
                                         cv::Point( dilation_size, dilation_size ) );
 
     cudaRun();
@@ -111,13 +111,11 @@ int main(int argc, char **argv)
 
         int h = imLeft.rows;
         int w = imLeft.cols;
-        cv::Mat maskRight = cv::Mat::ones(h,w,CV_8U);
         cv::Mat maskLeft = cv::Mat::ones(h,w,CV_8U);
+        cv::Mat maskRight = cv::Mat::ones(h,w,CV_8U);
 
         // Segment out the images
         if (argc == 5){
-
-            // std::cout << "first"<< std::endl;
 
             cv::Mat maskLeftRCNNRgb, maskRightRCNNRgb;
             maskLeftRCNNRgb = ddrnetPredict( imLeft, data_engine, size_engine );
@@ -125,21 +123,21 @@ int main(int argc, char **argv)
 
             cv::Mat maskLeftRCNN, maskRightRCNN;
 
-            cv::Mat bgr[3];
-            cv::split(maskLeftRCNNRgb,bgr);
-            maskLeftRCNN = bgr[0];
+            cv::Mat bgr_l[3];
+            cv::Mat bgr_r[3];
+            cv::split(maskLeftRCNNRgb,bgr_l);
+            maskLeftRCNN = bgr_l[0];
 
-            cv::split(maskRightRCNNRgb,bgr);
-            maskRightRCNN = bgr[0];
-            cv::Mat maskLeftRCNNdil = maskLeftRCNN.clone();
-            cv::dilate(maskLeftRCNN, maskLeftRCNNdil, kernel);
-            maskLeft = maskLeft - maskLeftRCNNdil;
+            cv::split(maskRightRCNNRgb,bgr_r);
+            maskRightRCNN = bgr_r[0];
+
             cv::Mat maskRightRCNNdil = maskRightRCNN.clone();
             cv::dilate(maskRightRCNN, maskRightRCNNdil, kernel);
             maskRight = maskRight - maskRightRCNNdil;
+            cv::Mat maskLeftRCNNdil = maskLeftRCNN.clone();
+            cv::dilate(maskLeftRCNN, maskLeftRCNNdil, kernel);
+            maskLeft = maskLeft - maskLeftRCNNdil;
         }
-
-        // Pass the images to the SLAM system
         SLAM.TrackStereo(imLeft, imRight, maskLeft, maskRight, tframe);
 
 #ifdef COMPILEDWITHC11
