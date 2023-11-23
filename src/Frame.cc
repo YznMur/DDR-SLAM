@@ -51,7 +51,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &maskL
 {
     // Frame ID
     mnId=nNextId++;
-
+    // cout<<"frame_1"<<endl;
     // Scale Level Info
     mnScaleLevels = mpORBextractorLeft->GetLevels();
     mfScaleFactor = mpORBextractorLeft->GetScaleFactor();
@@ -72,7 +72,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &maskL
     cv::Mat MaskRight_dil = maskRight.clone();
     int dilation_size = 15;
     cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
-                                        cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                                        cv::Size( dilation_size + 1, dilation_size+1 ),
                                         cv::Point( dilation_size, dilation_size ) );
     cv::erode(maskLeft, MaskLeft_dil, kernel);
     cv::erode(maskRight, MaskRight_dil, kernel);
@@ -82,36 +82,97 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const cv::Mat &maskL
 
     std::vector<cv::KeyPoint> _mvKeys;
     cv::Mat _mDescriptors;
+////PUT ON MASKES THEN EXTRACT FEATURES
+    // for (size_t i(0); i < mvKeys.size(); ++i)
+    // {
+    //     int val = (int)MaskLeft_dil.at<uchar>(mvKeys[i].pt.y,mvKeys[i].pt.x);
+    //     if (val == 1)
+    //     {
+    //         _mvKeys.push_back(mvKeys[i]);
+    //         _mDescriptors.push_back(mDescriptors.row(i));
+    //     }
+    // }
+    // mvKeys = _mvKeys;
+    // mDescriptors = _mDescriptors;
 
-    for (size_t i(0); i < mvKeys.size(); ++i)
-    {
-        int val = (int)MaskLeft_dil.at<uchar>(mvKeys[i].pt.y,mvKeys[i].pt.x);
-        if (val == 1)
-        {
-            _mvKeys.push_back(mvKeys[i]);
-            _mDescriptors.push_back(mDescriptors.row(i));
+    // std::vector<cv::KeyPoint> _mvKeysRight;
+    // cv::Mat _mDescriptorsRight;
+
+    // for (size_t i(0); i < mvKeysRight.size(); ++i)
+    // {
+    //     int val = (int)MaskRight_dil.at<uchar>(mvKeysRight[i].pt.y,mvKeysRight[i].pt.x);
+    //     if (val == 1)
+    //     {
+    //         _mvKeysRight.push_back(mvKeysRight[i]);
+    //         _mDescriptorsRight.push_back(mDescriptorsRight.row(i));
+    //     }
+    // }
+
+    // mvKeysRight = _mvKeysRight;
+    // mDescriptorsRight = _mDescriptorsRight;
+
+
+////EXTRACT FEATURES THEN PUT ON MASKS .   IF NUMBER OF KEYPOINTS BEFORE MATCHING > CERTIAN THRESHOLD EXP. 1750
+    N = mvKeys.size();
+    cout << "mvKeys.size:   "<< N<<endl;
+    if(mvKeys.size() > 1500){
+        mImGray = imLeft;
+        cv::Mat imGrayRight = imRight;
+        cv::Mat imMaskLeft = maskLeft;
+        cv::Mat imMaskRight = maskRight;
+
+        cv::Mat _mImGray = mImGray.clone();
+        mImGray = mImGray*0;
+        _mImGray.copyTo(mImGray,imMaskLeft);
+
+        cv::Mat _imGrayRight = imGrayRight.clone();
+        imGrayRight = imGrayRight*0;
+        _imGrayRight.copyTo(imGrayRight,imMaskRight);
+
+        // Delete those ORB points that fall in Mask borders (Included by Berta)
+        cv::Mat MaskLeft_dil = maskLeft.clone();
+        cv::Mat MaskRight_dil = maskRight.clone();
+        int dilation_size = 10;
+        cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
+                                            cv::Size( dilation_size + 1, dilation_size+1 ),
+                                            cv::Point( dilation_size, dilation_size ) );
+        cv::erode(maskLeft, MaskLeft_dil, kernel);
+        cv::erode(maskRight, MaskRight_dil, kernel);
+
+        if(mvKeys.empty())
+            return;
+
+        std::vector<cv::KeyPoint> _mvKeys;
+        cv::Mat _mDescriptors;
+        for (size_t i(0); i < mvKeys.size(); ++i)
+        {   
+            int val = (int)MaskLeft_dil.at<uchar>(mvKeys[i].pt.y,mvKeys[i].pt.x);
+            if (val == 1)
+            {
+                _mvKeys.push_back(mvKeys[i]);
+                _mDescriptors.push_back(mDescriptors.row(i));
+            }
         }
-    }
 
-    mvKeys = _mvKeys;
-    mDescriptors = _mDescriptors;
+        mvKeys = _mvKeys;
+        mDescriptors = _mDescriptors;
 
-    std::vector<cv::KeyPoint> _mvKeysRight;
-    cv::Mat _mDescriptorsRight;
+        std::vector<cv::KeyPoint> _mvKeysRight;
+        cv::Mat _mDescriptorsRight;
 
-    for (size_t i(0); i < mvKeysRight.size(); ++i)
-    {
-        int val = (int)MaskRight_dil.at<uchar>(mvKeysRight[i].pt.y,mvKeysRight[i].pt.x);
-        if (val == 1)
+        for (size_t i(0); i < mvKeysRight.size(); ++i)
         {
-            _mvKeysRight.push_back(mvKeysRight[i]);
-            _mDescriptorsRight.push_back(mDescriptorsRight.row(i));
+            int val = (int)MaskRight_dil.at<uchar>(mvKeysRight[i].pt.y,mvKeysRight[i].pt.x);
+            if (val == 1)
+            {
+                _mvKeysRight.push_back(mvKeysRight[i]);
+                _mDescriptorsRight.push_back(mDescriptorsRight.row(i));
+            }
         }
+
+        mvKeysRight = _mvKeysRight;
+        mDescriptorsRight = _mDescriptorsRight;
     }
-
-    mvKeysRight = _mvKeysRight;
-    mDescriptorsRight = _mDescriptorsRight;
-
 
     N = mvKeys.size();
 
@@ -156,6 +217,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imMas
 {
     // Frame ID
     mnId=nNextId++;
+    cout<<"frame_2"<<endl;
 
     // Scale Level Info
     mnScaleLevels = mpORBextractorLeft->GetLevels();
@@ -239,7 +301,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imMas
 {
     // Frame ID
     mnId=nNextId++;
-
+    cout<<"frame_3"<<endl;
     // Scale Level Info
     mnScaleLevels = mpORBextractorLeft->GetLevels();
     mfScaleFactor = mpORBextractorLeft->GetScaleFactor();
@@ -320,6 +382,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &mask, const double &timeStamp
 {
     // Frame ID
     mnId=nNextId++;
+    // cout<<"frame_4"<<endl;
 
     // Scale Level Info
     mnScaleLevels = mpORBextractorLeft->GetLevels();
@@ -346,19 +409,28 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &mask, const double &timeStamp
 
     std::vector<cv::KeyPoint> _mvKeys;
     cv::Mat _mDescriptors;
+    N = mvKeys.size();
+    // cout << "mvKeys.size:   "<< N<<endl;
+    if(mvKeys.size() > 2000){
+        mImGray = imGray;
+        cv::Mat imMask = mask;
+        cv::Mat _mImGray = mImGray.clone();
+        mImGray = mImGray*0;
+        _mImGray.copyTo(mImGray,imMask);
 
-    for (size_t i(0); i < mvKeys.size(); ++i)
-    {
-        int val = (int)Mask_dil.at<uchar>(mvKeys[i].pt.y,mvKeys[i].pt.x);
-        if (val == 1)
+        for (size_t i(0); i < mvKeys.size(); ++i)
         {
-            _mvKeys.push_back(mvKeys[i]);
-            _mDescriptors.push_back(mDescriptors.row(i));
+            int val = (int)Mask_dil.at<uchar>(mvKeys[i].pt.y,mvKeys[i].pt.x);
+            if (val == 1)
+            {
+                _mvKeys.push_back(mvKeys[i]);
+                _mDescriptors.push_back(mDescriptors.row(i));
+            }
         }
-    }
 
-    mvKeys = _mvKeys;
-    mDescriptors = _mDescriptors;
+        mvKeys = _mvKeys;
+        mDescriptors = _mDescriptors;
+    }
 
     if(mvKeys.empty())
         return;

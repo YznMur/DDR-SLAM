@@ -18,7 +18,7 @@ git clone https://github.com/YznMur/DDRSLAM.git
   make -j8
   ./ddrnet -s 
 ```
-
+* DDRNet_trt weights :  https://drive.google.com/drive/folders/1Dijxp_i5nXrrv0F1GHQthtplL9SmZq04?usp=sharing
 * Run in terminal:
 ```
 export LD_LIBRARY_PATH=/root/ddr_orb2/ddrnet_trt/:$LD_LIBRARY_PATH

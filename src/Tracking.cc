@@ -184,14 +184,14 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
             cvtColor(imGrayRight,imGrayRight,CV_BGRA2GRAY);
         }
     }
+    //// Put on masks then extract orb features
+    // cv::Mat _mImGray = mImGray.clone();
+    // mImGray = mImGray*0;
+    // _mImGray.copyTo(mImGray,imMaskLeft);
 
-    cv::Mat _mImGray = mImGray.clone();
-    mImGray = mImGray*0;
-    _mImGray.copyTo(mImGray,imMaskLeft);
-
-    cv::Mat _imGrayRight = imGrayRight.clone();
-    imGrayRight = imGrayRight*0;
-    _imGrayRight.copyTo(imGrayRight,imMaskRight);
+    // cv::Mat _imGrayRight = imGrayRight.clone();
+    // imGrayRight = imGrayRight*0;
+    // _imGrayRight.copyTo(imGrayRight,imMaskRight);
 
     mCurrentFrame = Frame(mImGray,imGrayRight,imMaskLeft,imMaskRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
 
@@ -319,9 +319,9 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const cv::Mat &mask, con
             cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
     }
 
-    cv::Mat _mImGray = mImGray.clone();
-    mImGray = mImGray*0;
-    _mImGray.copyTo(mImGray,imMask);
+    // cv::Mat _mImGray = mImGray.clone();
+    // mImGray = mImGray*0;
+    // _mImGray.copyTo(mImGray,imMask);
 
     if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
     {
@@ -1210,6 +1210,7 @@ bool Tracking::TrackLocalMap()
     if(mnMatchesInliers<30)
         return false;
     else
+        // std::cout << "current pose:\n" << mCurrentFrame.mTcw << std::endl;
         return true;
 }
 
