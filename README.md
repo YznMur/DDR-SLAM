@@ -27,12 +27,16 @@ export LD_LIBRARY_PATH=/root/ddr_orb2/ddrnet_trt/:$LD_LIBRARY_PATH
 ```
 ./build.sh
 ```
-## Examples on [KITTI_Dataset]( http://www.cvlibs.net/datasets/kitti)
-* Run:
+### Examples on:
+* #### [KITTI Dataset:]( http://www.cvlibs.net/datasets/kitti)
 ```
-./scripts/mono.sh
-./scripts/stereo.sh
+./scripts/mono_kitti.sh
+./scripts/stereo_kitti.sh
 ```
-
+* #### [Cityscapes Dataset:]( https://www.cityscapes-dataset.com/)
+```
+./scripts/mono_cs.sh
+./scripts/stereo_cs.sh
+```
 ## Acknowledgements
 This code is based on a forked version of [ORB-SLAM2](https://github.com/raulmur/ORB_SLAM2).

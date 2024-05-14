@@ -1,0 +1,1 @@
+/root/ddr_orb2/Examples/Monocular/mono_kitti /root/ddr_orb2/Vocabulary/ORBvoc.txt ./Examples/Monocular/cityscaps_mono.yaml /home/Dataset/s4 ddr
