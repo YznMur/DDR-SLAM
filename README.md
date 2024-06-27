@@ -39,4 +39,4 @@ export LD_LIBRARY_PATH=/root/ddr_orb2/ddrnet_trt/:$LD_LIBRARY_PATH
 ./scripts/stereo_cs.sh
 ```
 ## Acknowledgements
-This code is based on a forked version of [ORB-SLAM2](https://github.com/raulmur/ORB_SLAM2).
+This code is based on a forked version of [ORB-SLAM2](https://github.com/raulmur/ORB_SLAM2) and [DDRNet](https://github.com/ydhongHIT/DDRNet).
